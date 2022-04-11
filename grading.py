@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import random
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 def importCSV(file=None):
     if file is None:
@@ -70,6 +70,8 @@ def main():
     dueDate = datetime.strptime(dueDate + '-23-59', '%Y-%m-%d-%H-%M')
     txtPath = 'gradeFiles/' + assignment + '/file_submissions/txt/'
     file = f'gradeFiles/{assignment}/{assignment}.csv'
+    resubDeadline = dueDate + timedelta(days=7)
+    resubDeadline = resubDeadline.date()
     
     # Create dataframe and dictionaries
     gradeDF = importCSV(file)
@@ -90,7 +92,8 @@ def main():
                 points = findLate(row['Username'], txtPath, dueDate)
             else:
                 print(row['Feedback to Learner'])
-                points = findLate(row['Username'], txtPath, dueDate, True)
+                isResub = True
+                points = findLate(row['Username'], txtPath, dueDate, isResub)
             
             # Pass/Fail, if pass give positive feedback otherwise prompt for feedback
             passing = input('Pass? [Y/n] ') or True
@@ -101,9 +104,12 @@ def main():
             else:
                 gradeDict[row['Username']] = 0
                 feedback = input('Feedback: ')
-                feedDict[row['Username']] = f"""<p>{feedback}</p>
+                if isResub:
+                    feedDict[row['Username']] = f"""<p>{feedback}</p>"""
+                else:
+                    feedDict[row['Username']] = f"""<p>{feedback}</p>
 <p><br></p> 
-<p>If you resubmit by next week, you can still receive {points} points.</p>"""
+<p>If you resubmit by {resubDeadline}, you can still receive {points} points.</p>"""
             
             formatDict[row['Username']] = 'HTML'
         else:
