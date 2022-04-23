@@ -65,19 +65,24 @@ def main():
     assignment = input("Assignment: ")
     dueDate = input('Due Date YYYY-MM-DD: ')
     colName = input('Column Name: ')
+    extraCredit = input('Extra Credit [y/N] ') or False
 
     # Set up paths and variables
     dueDate = datetime.strptime(dueDate + '-23-59', '%Y-%m-%d-%H-%M')
     txtPath = 'gradeFiles/' + assignment + '/file_submissions/txt/'
     file = f'gradeFiles/{assignment}/{assignment}.csv'
-    resubDeadline = dueDate + timedelta(days=7)
-    resubDeadline = resubDeadline.date()
+    resubDeadline = date.today() + timedelta(days=7)
     
     # Create dataframe and dictionaries
     gradeDF = importCSV(file)
     gradeDict = {}
     feedDict = {}
     formatDict = {}
+
+    # Handle extra credit
+    if extraCredit == 'y':
+        extraPoints = input('How many points available: [1]') or 1
+        extraCredit = True
 
     for index, row in gradeDF.sort_values(by=['Username']).iterrows():
         print(f"Currently grading {row['First Name']} {row['Last Name']} - {row['Username']}")
@@ -90,6 +95,7 @@ def main():
             # Then determine points
             if pd.isnull(row['Feedback to Learner']):
                 points = findLate(row['Username'], txtPath, dueDate)
+                isResub = False
             else:
                 print(row['Feedback to Learner'])
                 isResub = True
@@ -98,6 +104,10 @@ def main():
             # Pass/Fail, if pass give positive feedback otherwise prompt for feedback
             passing = input('Pass? [Y/n] ') or True
             if passing is True:
+                if extraCredit:
+                    getExtra = input('Extra credit? [Y/n] ') or True
+                    if getExtra is True:
+                        points = int(points) + extraPoints
                 gradeDict[row['Username']] = points
                 affirmation = affirmations[random.randint(0, len(affirmations) - 1)]
                 feedDict[row['Username']] = f"<p>{affirmation}</p>"
