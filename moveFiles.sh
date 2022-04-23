@@ -1,13 +1,7 @@
 #!/bin/bash
 
-read -p "What is the assignment? " assignment
+mkdir gradeFiles/$1/file_submissions/file
+mv gradeFiles/$1/file_submissions/* gradeFiles/$1/file_submissions/file/
 
-cd gradeFiles
-cd $assignment
-cd file_submissions
-
-mkdir file
-mv * file/
-
-mkdir txt
-mv file/*.txt txt/
+mkdir gradeFiles/$1/file_submissions/txt
+mv gradeFiles/$1/file_submissions/file/*.txt gradeFiles/$1/file_submissions/txt/
